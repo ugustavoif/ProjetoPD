@@ -27,11 +27,8 @@ func GetApplicationPort() int {
 
 func getEnvironmentValue(key string) string {
 	if os.Getenv(key) == "" {
-		log.Fatalf("%s environment variable is missing", key)
+		log.Fatalf("%s environment variable is missing.", key)
 	}
-	return os.Getenv(key)
-}
 
-func GetPaymentServiceUrl() string {
-	return getEnvironmentValue("PAYMENT_SERVICE_URL")
+	return os.Getenv(key)
 }

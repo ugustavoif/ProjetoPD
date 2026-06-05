@@ -1,10 +1,10 @@
-module github.com/ruandg/microservices/order
+module github.com/ruandg/microservices/payment
 
 go 1.26.3
 
 require (
-	github.com/ruandg/microservices-proto/golang/order v0.0.0-00010101000000-000000000000
 	github.com/ruandg/microservices-proto/golang/payment v0.0.0-00010101000000-000000000000
+	github.com/sirupsen/logrus v1.9.0
 	google.golang.org/grpc v1.81.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
@@ -21,7 +21,5 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
-
-replace github.com/ruandg/microservices-proto/golang/order => ./proto/order
 
 replace github.com/ruandg/microservices-proto/golang/payment => ./proto/payment
