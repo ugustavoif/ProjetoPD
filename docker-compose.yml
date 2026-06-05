@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: microservices-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: order
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  payment:
+    build:
+      context: ./ProjetoPD/microservices/payment
+      dockerfile: Dockerfile
+    container_name: microservices-payment
+    ports:
+      - "3001:3001"
+    environment:
+      - ENV=development
+      - APPLICATION_PORT=3001
+      - DATA_SOURCE_URL=root:rootpass@tcp(mysql:3306)/payment?charset=utf8mb4&parseTime=True&loc=Local
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  order:
+    build:
+      context: ./ProjetoPD/microservices/order
+      dockerfile: Dockerfile
+    container_name: microservices-order
+    ports:
+      - "3000:3000"
+    environment:
+      - ENV=development
+      - APPLICATION_PORT=3000
+      - DATA_SOURCE_URL=root:rootpass@tcp(mysql:3306)/order?charset=utf8mb4&parseTime=True&loc=Local
+      - PAYMENT_SERVICE_URL=payment:3001
+    depends_on:
+      mysql:
+        condition: service_healthy
+      payment:
+        condition: service_started
+
+volumes:
+  mysql_data:
