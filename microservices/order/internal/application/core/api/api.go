@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/ruandg/microservices/order/internal/application/core/domain"
 	"github.com/ruandg/microservices/order/internal/ports"
@@ -38,6 +39,9 @@ func (a Application) PlaceOrder(order domain.Order) (domain.Order, error) {
 	}
 	paymentErr := a.payment.Charge(&order)
 	if paymentErr != nil {
+		if status.Code(paymentErr) == codes.DeadlineExceeded {
+			log.Printf("Deadline exceeded while calling payment service: %v", paymentErr)
+		}
 		a.db.UpdateStatus(fmt.Sprintf("%d", order.ID), "Canceled")
 		return domain.Order{}, paymentErr
 	}
