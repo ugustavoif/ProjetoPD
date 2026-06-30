@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
@@ -20,7 +18,7 @@ services:
 
   payment:
     build:
-      context: ./ProjetoPD/microservices/payment
+      context: ./microservices/payment
       dockerfile: Dockerfile
     container_name: microservices-payment
     ports:
@@ -35,7 +33,7 @@ services:
 
   order:
     build:
-      context: ./ProjetoPD/microservices/order
+      context: ./microservices/order
       dockerfile: Dockerfile
     container_name: microservices-order
     ports:
@@ -45,11 +43,25 @@ services:
       - APPLICATION_PORT=3000
       - DATA_SOURCE_URL=root:rootpass@tcp(mysql:3306)/order?charset=utf8mb4&parseTime=True&loc=Local
       - PAYMENT_SERVICE_URL=payment:3001
+      - SHIPPING_SERVICE_URL=shipping:3002
     depends_on:
       mysql:
         condition: service_healthy
       payment:
         condition: service_started
+      shipping:
+        condition: service_started
+
+  shipping:
+    build:
+      context: ./microservices/shipping
+      dockerfile: Dockerfile
+    container_name: microservices-shipping
+    ports:
+      - "3002:3002"
+    environment:
+      - ENV=development
+      - APPLICATION_PORT=3002
 
 volumes:
   mysql_data:

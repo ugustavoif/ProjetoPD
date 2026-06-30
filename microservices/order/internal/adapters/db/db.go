@@ -23,6 +23,11 @@ type OrderItem struct {
 	OrderID     uint
 }
 
+type Product struct {
+	gorm.Model
+	ProductCode string `gorm:"type:varchar(255);uniqueIndex"`
+}
+
 type Adapter struct {
 	db *gorm.DB
 }
@@ -32,10 +37,15 @@ func NewAdapter(dataSourceUrl string) (*Adapter, error) {
 	if openErr != nil {
 		return nil, fmt.Errorf("db connection error: %v", openErr)
 	}
-	err := db.AutoMigrate(&Order{}, OrderItem{})
+	err := db.AutoMigrate(&Order{}, OrderItem{}, Product{})
 	if err != nil {
 		return nil, fmt.Errorf("db migration error: %v", err)
 	}
+
+	// Initial data population for manual testing
+	db.FirstOrCreate(&Product{ProductCode: "P1"}, Product{ProductCode: "P1"})
+	db.FirstOrCreate(&Product{ProductCode: "P2"}, Product{ProductCode: "P2"})
+	db.FirstOrCreate(&Product{ProductCode: "P3"}, Product{ProductCode: "P3"})
 	return &Adapter{db: db}, nil
 }
 
@@ -84,4 +94,15 @@ func (a Adapter) Save(order *domain.Order) error {
 func (a Adapter) UpdateStatus(id string, status string) error {
 	res := a.db.Model(&Order{}).Where("id = ?", id).Update("status", status)
 	return res.Error
+}
+
+func (a Adapter) CheckProductsExist(productCodes []string) error {
+	for _, code := range productCodes {
+		var product Product
+		res := a.db.Where("product_code = ?", code).First(&product)
+		if res.Error != nil {
+			return fmt.Errorf("Produto '%s' não encontrado", code)
+		}
+	}
+	return nil
 }
